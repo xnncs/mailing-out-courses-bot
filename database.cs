@@ -24,7 +24,7 @@ namespace project
 
 
         private string[] lines = System.IO.File.ReadAllLines(path);
-        private const string path = @"D:\code\codes\project\users.txt";
+        private const string path = @"D:\code\codes\project\data\users.txt";
 
         //reutrns current user line 
         private int position
@@ -60,10 +60,10 @@ namespace project
                         stream.Write(Username + " ");
                         stream.Write($"Admin:{Admin} ");
                         stream.WriteLine($"Follow:{Follow}");
+                    
+                    }
 
                 }
-
-            }
             }
 
             return;

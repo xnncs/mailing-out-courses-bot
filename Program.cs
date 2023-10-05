@@ -14,10 +14,6 @@ namespace project
 
     class Program
     {
-        public static string courseText = "Course";
-
-        public static string courseUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-
         static void Main()
         {
 

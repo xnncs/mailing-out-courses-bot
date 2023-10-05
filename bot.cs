@@ -14,10 +14,6 @@ namespace project
 
     class Bot
     {
-        public static string courseText = "Course";
-
-        public static string courseUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-
         public static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
             throw new NotImplementedException();
@@ -66,7 +62,7 @@ namespace project
                     {
                         InlineKeyboardButton.WithUrl(
                             text: "Link to the course",
-                            url: courseUrl)
+                            url: Data.courseUrl)
                     });
 
                     ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
@@ -84,7 +80,7 @@ namespace project
                     {
                         Message sentMessage = await botClient.SendTextMessageAsync(
                             chatId: user.id,
-                            text: courseText,
+                            text: Data.courseText,
                             replyMarkup: courseLink,
                             cancellationToken: token);
 
