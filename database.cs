@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.Data.Common;
+using System.IO;
+using Telegram.Bot.Requests;
 
 
 namespace project
@@ -17,7 +19,7 @@ namespace project
     class Database
     {
         //user data
-        private readonly long id;
+        private readonly long Id;
         private string Username;
         private bool Admin;
         private bool Follow;
@@ -27,39 +29,44 @@ namespace project
         private const string path = @"D:\code\codes\project\data\users.txt";
 
         //reutrns current user line 
-        private int position
+        private int GetPosition(long id, string[] lines)
         {
-            get
+
+            int temp = -1;
+
+            for(int i = 0; i < lines.GetLength(0); i++)
             {
-                int temp = -1;
-
-                for(int i = 0; i < lines.GetLength(0); i++)
+                if(lines[i].Contains(id.ToString()))
                 {
-                    if(lines[i].Contains(id.ToString()))
-                    {
-                        temp = i;
-                        break;
-                    }
+                    temp = i;
+                    break;
                 }
-
-                return temp;
             }
+
+            return temp;
+        
         }
         
         public void ChangeFollow(bool temp)
         {
             if(Follow != temp)
             {
-                string line = lines[position];
+                string[] str = System.IO.File.ReadAllLines(path);
+                
+                string thisLine = str[GetPosition(Id, str)];
 
-                using (FileStream file = new FileStream(path, FileMode.Append))
+                thisLine.Replace($"Follow:{!temp}",$"Follow:{temp}");
+
+
+                using (FileStream file = new FileStream(path, FileMode.Open))
                 {
+                    
                     using (StreamWriter stream = new StreamWriter(file))
                     {
-                        stream.Write(id + " ");
-                        stream.Write(Username + " ");
-                        stream.Write($"Admin:{Admin} ");
-                        stream.WriteLine($"Follow:{Follow}");
+                        foreach(var line in str)
+                        {
+                            stream.WriteLine(line);
+                        }
                     
                     }
 
@@ -71,7 +78,7 @@ namespace project
 
         private void CreateUser(Update update)
         {
-            Console.WriteLine($"Created new user with id {id}");
+            Console.WriteLine($"Created new user with id {Id}");
             Username = update.Message.Chat.Username;
             Admin = false;
             Follow = false;
@@ -80,45 +87,70 @@ namespace project
             {
                 using (StreamWriter stream = new StreamWriter(file))
                 {
-                    stream.Write(id + " ");
+                    stream.Write(Id + " ");
                     stream.Write(Username + " ");
                     stream.Write($"Admin:{Admin} ");
                     stream.WriteLine($"Follow:{Follow}");
+
 
                 }
 
             }
             
-            returnUser();
             return;
         }
 
         
+        //parsing data from users.txt
+        private User ParseData(string line)
+        {
+            string[] array = line.Trim().Split(' ');
+            int id = Convert.ToInt32(array[0]);
+            string username = array[1];
+            bool follow = Convert.ToBoolean(array[3].Remove(0, "Follow:".Length));
+            bool admin = Convert.ToBoolean(array[2].Remove(0, "Admin:".Length));
+            return new User(id, username, follow, admin);
+
+        }
 
         public Database(Update update)
         {
-            id = update.Message.Chat.Id;
+            Id = update.Message.Chat.Id;
             
             string temp = System.IO.File.ReadAllText(path);
-            if(!temp.Contains(id.ToString()))
+            if(!temp.Contains(Id.ToString()))
             {
                 CreateUser(update);
-                return;
             }
-            string line = lines[position];
+            else
+            {
+                string line = lines[GetPosition(Id, lines)];
 
-            //parsing data from users.txt
-            Username = line.Remove(0, id.ToString().Length).Trim().Split(' ')[0];
-            Admin = Convert.ToBoolean(line.Remove(0, id.ToString().Length).Trim().Remove(0, Username.Length + "Admin:".Length).Trim().Split(' ')[0]);
-            Follow = Convert.ToBoolean(line.Remove(0, id.ToString().Length).Trim().Remove(0, Username.Length + "Admin:".Length).Trim().Remove(0, Admin.ToString().Length + "Follow:".Length).Trim().Split(' ')[0]);;
+                User user = ParseData(line);
+                Username = user.username;
+                Follow = user.follow;
+                Admin = user.admin;
 
-            returnUser();
+            }
+            ReturnUser();
             return;
         }
 
-        public User returnUser()
+        public List<User> ReturnAllUsers()
         {
-            return new User(id, Username, Admin, Follow);
+            List<User> list = new List<User>();
+            
+            foreach(string line in lines)
+            {
+                User user = ParseData(line);
+                list.Add(user);
+            }
+
+            return list;
+        }
+        public User ReturnUser()
+        {
+            return new User(Id, Username, Admin, Follow);
         }
     }
 }
