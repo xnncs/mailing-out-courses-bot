@@ -15,7 +15,7 @@ namespace project
     class Bot
     {
         
-        public static Telegram.Bot.Polling.ReceiverOptions? updateHandler;
+        public static Telegram.Bot.Polling.ReceiverOptions? updateHandler = new Telegram.Bot.Polling.ReceiverOptions();
 
         public static Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
@@ -24,143 +24,153 @@ namespace project
 
         async public static Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
-
             
-            if (update.Message.Text != null)
+            if (update.Message != null)
             {
 
-                Database database = new Database(update);
-                User user = database.ReturnUser();
-                List<User> users = database.ReturnAllUsers();
+                if (update.Message.Text != null)
+                {
+                    Database database = new Database(update);
+                    User user = database.ReturnUser();
+                    List<User> users = database.ReturnAllUsers();
+
+                    Data data = new Data();
 
 
-                Console.WriteLine($"{update.Message.Text} {user.id} {user.username} {update.Message.Date}");
+                    Console.WriteLine($"{update.Message.Text} {user.id} {user.username} admin:{user.admin} follow:{user.follow} {update.Message.Date} ");
 
-                ReplyKeyboardMarkup adminReplyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
-                {
-                    new KeyboardButton[] { "/start" },
-                    new KeyboardButton[] { "/send" },
-                })
-                {
-                    ResizeKeyboard = true,
-                };
+                    ReplyKeyboardMarkup adminReplyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "/start" },
+                        new KeyboardButton[] { "/send" },
+                    })
+                    {
+                        ResizeKeyboard = true,
+                    };
 
-                
-                InlineKeyboardMarkup CourseLink = new InlineKeyboardMarkup(new[]
-                {
-                    InlineKeyboardButton.WithUrl(
-                        text: Data.CourseButtonText,
-                        url: Data.CourseUrl)
-                });
-
-                ReplyKeyboardMarkup userReplyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
-                {
-                    new KeyboardButton[] { "/subscribe" },
-                    new KeyboardButton[] { "/unsubscribe" },
-                    new KeyboardButton[] { "/course" },
-                })
-                {
-                    ResizeKeyboard = true,
-                };
-
-                if (user.admin)
-                {
                     
-
-                    if (update.Message.Text.ToLower().Contains("/start"))
+                    InlineKeyboardMarkup CourseLink = new InlineKeyboardMarkup(new[]
                     {
-                        Message startMessage = await botClient.SendTextMessageAsync(
-                            chatId: user.id,
-                            replyMarkup: adminReplyKeyboardMarkup,
-                            text: "You are an administrator, there is a panel in front of you, you can use it to: upload videos for mailing, change the course description and change the link to the course",
-                            cancellationToken: token);
+                        InlineKeyboardButton.WithUrl(
+                            text: Data.CourseButtonText,
+                            url: data.CourseUrl)
+                    });
 
-                        return;
+                    ReplyKeyboardMarkup userReplyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
+                    {
+                        new KeyboardButton[] { "/subscribe" },
+                        new KeyboardButton[] { "/unsubscribe" },
+                        new KeyboardButton[] { "/course" },
+                    })
+                    {
+                        ResizeKeyboard = true,
+                    };
+
+                    if (user.admin)
+                    {
+                        
+
+                        if (update.Message.Text.ToLower().Contains("/start"))
+                        {
+                            Message startMessage = await botClient.SendTextMessageAsync(
+                                chatId: user.id,
+                                replyMarkup: adminReplyKeyboardMarkup,
+                                text: Data.adminStartText,
+                                cancellationToken: token);
+
+                            return;
+                        }
+                        if (update.Message.Text.ToLower().Contains("/send"))
+                        {
+                            foreach(User temp in users)
+                            {
+                                if(temp.follow)
+                                {
+                                    Message courseMessage = await botClient.SendTextMessageAsync(
+                                        chatId: temp.id,
+                                        text: data.CourseText,
+                                        replyMarkup: CourseLink,
+                                        cancellationToken: token);
+                                }
+
+                            }
+
+                            return;
+                        }
                     }
-                    if (update.Message.Text.ToLower().Contains("/send"))
+                    else
                     {
-                        foreach(User temp in users)
+
+                        if (update.Message.Text.ToLower().Contains("/course"))
                         {
                             Message courseMessage = await botClient.SendTextMessageAsync(
-                                chatId: temp.id,
-                                text: Data.CourseText,
+                                chatId: user.id,
+                                text: data.CourseText,
                                 replyMarkup: CourseLink,
                                 cancellationToken: token);
+
+                            return;
                         }
 
-                        return;
-                    }
-                }
-                else
-                {
+                        if (update.Message.Text.ToLower().Contains("/subscribe"))
+                        {
+                            if(user.follow == true)
+                            {    
+                                Message AlradySupscribeMessage = await botClient.SendTextMessageAsync(
+                                    chatId: user.id,
+                                    text: Data.AlradySubscribeText,
+                                    cancellationToken: token);
 
-                    if (update.Message.Text.ToLower().Contains("/course"))
-                    {
-                        Message courseMessage = await botClient.SendTextMessageAsync(
-                            chatId: user.id,
-                            text: Data.CourseText,
-                            replyMarkup: CourseLink,
-                            cancellationToken: token);
+                                return;
+                            }
 
-                        return;
-                    }
+                            database.ChangeFollow(true);
 
-                    if (update.Message.Text.ToLower().Contains("/subscribe"))
-                    {
-                        if(user.follow == true)
-                        {    
-                            Message AlradySupscribeMessage = await botClient.SendTextMessageAsync(
+                            Message supscribeMessage = await botClient.SendTextMessageAsync(
                                 chatId: user.id,
-                                text: Data.AlradySubscribeText,
+                                text: Data.SubscribeText,
                                 cancellationToken: token);
 
                             return;
                         }
 
-                        database.ChangeFollow(true);
+                        if (update.Message.Text.ToLower().Contains("/unsubscribe"))
+                        {
+                            if(user.follow == false)
+                            {    
+                                Message AlradySupscribeMessage = await botClient.SendTextMessageAsync(
+                                    chatId: user.id,
+                                    text: Data.AlradyUnsubscribeText,
+                                    cancellationToken: token);
 
-                        Message supscribeMessage = await botClient.SendTextMessageAsync(
-                            chatId: user.id,
-                            text: Data.SubscribeText,
-                            cancellationToken: token);
-
-                        return;
-                    }
-
-                    if (update.Message.Text.ToLower().Contains("/unsubscribe"))
-                    {
-                        if(user.follow == false)
-                        {    
-                            Message AlradySupscribeMessage = await botClient.SendTextMessageAsync(
+                                return;
+                            }
+                            database.ChangeFollow(false);
+                            
+                            Message unsupscribeMessage = await botClient.SendTextMessageAsync(
                                 chatId: user.id,
-                                text: Data.AlradyUnsubscribeText,
+                                text: Data.UnsubscribeText,
                                 cancellationToken: token);
 
                             return;
                         }
-                        database.ChangeFollow(false);
-                        
-                        Message unsupscribeMessage = await botClient.SendTextMessageAsync(
-                            chatId: user.id,
-                            text: Data.UnsubscribeText,
-                            cancellationToken: token);
+
+                        if (update.Message.Text.ToLower().Contains("/start"))
+                        {
+                            Message startMessage = await botClient.SendTextMessageAsync(
+                                chatId: user.id,
+                                replyMarkup: userReplyKeyboardMarkup,
+                                text: Data.StartText,
+                                cancellationToken: token);
+
+                            return;
+                        }
 
                         return;
                     }
-
-                    if (update.Message.Text.ToLower().Contains("/start"))
-                    {
-                        Message startMessage = await botClient.SendTextMessageAsync(
-                            chatId: user.id,
-                            replyMarkup: userReplyKeyboardMarkup,
-                            text: Data.StartText,
-                            cancellationToken: token);
-
-                        return;
-                    }
-
-                    return;
                 }
+
+                
 
             }
             return;

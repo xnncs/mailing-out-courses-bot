@@ -26,12 +26,11 @@ namespace project
 
 
         private string[] lines = System.IO.File.ReadAllLines(path);
-        private const string path = @"D:\code\codes\project\data\users.txt";
+        private const string path = @"data\users.txt";
 
         //reutrns current user line 
         private int GetPosition(long id, string[] lines)
         {
-
             int temp = -1;
 
             for(int i = 0; i < lines.GetLength(0); i++)
@@ -91,8 +90,6 @@ namespace project
                     stream.Write(Username + " ");
                     stream.Write($"Admin:{Admin} ");
                     stream.WriteLine($"Follow:{Follow}");
-
-
                 }
 
             }
@@ -105,18 +102,20 @@ namespace project
         private User ParseData(string line)
         {
             string[] array = line.Trim().Split(' ');
-            int id = Convert.ToInt32(array[0]);
+            long id = Convert.ToInt64(array[0]);
             string username = array[1];
-            bool follow = Convert.ToBoolean(array[3].Remove(0, "Follow:".Length));
-            bool admin = Convert.ToBoolean(array[2].Remove(0, "Admin:".Length));
-            return new User(id, username, follow, admin);
+            bool admin = Convert.ToBoolean(array[2].Remove(0, "admin:".Length));
+            bool follow = Convert.ToBoolean(array[3].Remove(0, "follow:".Length));
+
+            return new User(id, username, admin:admin, follow:follow);
+
 
         }
 
         public Database(Update update)
         {
             Id = update.Message.Chat.Id;
-            
+
             string temp = System.IO.File.ReadAllText(path);
             if(!temp.Contains(Id.ToString()))
             {
@@ -125,16 +124,20 @@ namespace project
             else
             {
                 string line = lines[GetPosition(Id, lines)];
-
                 User user = ParseData(line);
+                Id = user.id;
                 Username = user.username;
                 Follow = user.follow;
                 Admin = user.admin;
 
             }
+
+
             ReturnUser();
             return;
         }
+
+
 
         public List<User> ReturnAllUsers()
         {
@@ -150,7 +153,7 @@ namespace project
         }
         public User ReturnUser()
         {
-            return new User(Id, Username, Admin, Follow);
+            return new User(Id, Username, Follow, Admin);
         }
     }
 }

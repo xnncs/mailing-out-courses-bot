@@ -18,8 +18,8 @@ namespace project
 
             this.admin = admin;
         }
-        public long id { get; private set; }
-        public string username { get; private set; }
+        public long id { get; set; }
+        public string username { get; set; }
         public bool admin { get; set; }
         public bool follow { get; set; }
 
