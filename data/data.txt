@@ -1,4 +1,0 @@
-courseurl:https://github.com/xnncs/project
-coursetext:new commit is alrady at my github
-hour:511 minute:30
-

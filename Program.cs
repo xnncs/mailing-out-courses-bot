@@ -1,20 +1,7 @@
-﻿using System.ComponentModel;
-using System.Numerics;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Args;
-using Telegram.Bot.Types.Enums;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot.Polling;
-using System.Runtime.CompilerServices;
+﻿using Telegram.Bot;
 
 namespace project
 {
-
     class Program
     {
         static void Main()

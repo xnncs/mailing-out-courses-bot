@@ -1,159 +1,204 @@
-using System.Net.Mail;
-using System.Numerics;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Args;
-using Telegram.Bot.Types.Enums;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Telegram.Bot.Types.ReplyMarkups;
-using System.Data.Common;
-using System.IO;
-using Telegram.Bot.Requests;
-
+using System.Xml;
 
 namespace project
 {
-    class Database
+    class DataBase
     {
-        //user data
-        private readonly long Id;
-        private string Username;
-        private bool Admin;
-        private bool Follow;
+        private static Update update;
+        private const string path = @"D:\code\codes\project\data\users.xml";
+
+        private static long Id;
+        private static string Username;
+        private static bool Admin;
+        private static bool Follow;
 
 
-        private string[] lines = System.IO.File.ReadAllLines(path);
-        private const string path = @"data\users.txt";
-
-        //reutrns current user line 
-        private int GetPosition(long id, string[] lines)
+        private static XmlNode GetXmlNode(long Id, XmlElement xmlDocumentRoot)
         {
-            int temp = -1;
+            XmlNode node = null;
 
-            for(int i = 0; i < lines.GetLength(0); i++)
+            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("user");
+            if (userNodes != null)
             {
-                if(lines[i].Contains(id.ToString()))
+                foreach (XmlNode thisNode in userNodes)
                 {
-                    temp = i;
-                    break;
+                    if (Convert.ToInt64(thisNode.SelectSingleNode("@id").Value) == Id)
+                    {
+                        node = thisNode;
+                    }
                 }
             }
+            return node;
 
-            return temp;
-        
         }
-        
+        private static bool ContainsUser(long Id, XmlElement xmlDocumentRoot)
+        {
+            bool contains = false;
+
+            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("user");
+            if (userNodes != null)
+            {
+                foreach (XmlNode thisNode in userNodes)
+                {
+                    if (Convert.ToInt64(thisNode.SelectSingleNode("@id").Value) == Id)
+                    {
+                        contains = true;
+                    }
+                }
+            }
+            return contains;
+        }
         public void ChangeFollow(bool temp)
         {
-            if(Follow != temp)
+            if(Follow == temp)
             {
-                string[] str = System.IO.File.ReadAllLines(path);
-                
-                string thisLine = str[GetPosition(Id, str)];
-
-                thisLine.Replace($"Follow:{!temp}",$"Follow:{temp}");
-
-
-                using (FileStream file = new FileStream(path, FileMode.Open))
-                {
-                    
-                    using (StreamWriter stream = new StreamWriter(file))
-                    {
-                        foreach(var line in str)
-                        {
-                            stream.WriteLine(line);
-                        }
-                    
-                    }
-
-                }
+                return;
             }
 
-            return;
-        }
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
 
-        private void CreateUser(Update update)
-        {
-            Console.WriteLine($"Created new user with id {Id}");
-            Username = update.Message.Chat.Username;
-            Admin = false;
-            Follow = false;
+            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
 
-            using (FileStream file = new FileStream(path, FileMode.Append))
+            XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
+            if (node != null)
             {
-                using (StreamWriter stream = new StreamWriter(file))
-                {
-                    stream.Write(Id + " ");
-                    stream.Write(Username + " ");
-                    stream.Write($"Admin:{Admin} ");
-                    stream.WriteLine($"Follow:{Follow}");
-                }
-
+                xmlDocumentRoot.RemoveChild(node);
             }
-            
-            return;
-        }
+            xmlDocument.Save(path);
 
-        
-        //parsing data from users.txt
-        private User ParseData(string line)
-        {
-            string[] array = line.Trim().Split(' ');
-            long id = Convert.ToInt64(array[0]);
-            string username = array[1];
-            bool admin = Convert.ToBoolean(array[2].Remove(0, "admin:".Length));
-            bool follow = Convert.ToBoolean(array[3].Remove(0, "follow:".Length));
-
-            return new User(id, username, admin:admin, follow:follow);
-
+            WriteUserData(xmlDocument, xmlDocumentRoot, temp);
 
         }
 
-        public Database(Update update)
+        public DataBase(Update getUpdate)
         {
+            update = getUpdate;
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
+
+            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
+
             Id = update.Message.Chat.Id;
 
-            string temp = System.IO.File.ReadAllText(path);
-            if(!temp.Contains(Id.ToString()))
+            User user;
+            if(ContainsUser(Id, xmlDocumentRoot))
             {
-                CreateUser(update);
+                XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
+                user = GetUserData(node);
             }
             else
             {
-                string line = lines[GetPosition(Id, lines)];
-                User user = ParseData(line);
-                Id = user.id;
-                Username = user.username;
-                Follow = user.follow;
-                Admin = user.admin;
-
+                WriteUserData(xmlDocument, xmlDocumentRoot, follow: false);
+                XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
+                user = GetUserData(node);                
             }
 
-
-            ReturnUser();
-            return;
+            Id = user.id;
+            Username = user.username;
+            Admin = user.admin;
+            Follow = user.follow;
         }
 
+        private static void WriteUserData(XmlDocument xmlDocument, XmlElement xmlDocumentRoot, bool follow)
+        {
+            long id = update.Message.Chat.Id;
+            string username = update.Message.Chat.Username;
+            bool admin = false;
 
+            XmlElement userElement = xmlDocument.CreateElement("user");
 
-        public List<User> ReturnAllUsers()
+            XmlAttribute idAttribute = xmlDocument.CreateAttribute("id");
+
+            XmlElement nameElement = xmlDocument.CreateElement("username");
+            XmlElement adminElement = xmlDocument.CreateElement("admin");
+            XmlElement followElement = xmlDocument.CreateElement("follow");
+
+            XmlText idText = xmlDocument.CreateTextNode(id.ToString());
+            XmlText nameText = xmlDocument.CreateTextNode(username);
+            XmlText adminText = xmlDocument.CreateTextNode(admin.ToString());
+            XmlText followText = xmlDocument.CreateTextNode(follow.ToString());
+
+            idAttribute.AppendChild(idText);
+            nameElement.AppendChild(nameText);
+            adminElement.AppendChild(adminText);
+            followElement.AppendChild(followText);
+
+            userElement.Attributes.Append(idAttribute);
+
+            userElement.AppendChild(nameElement);
+            userElement.AppendChild(adminElement);
+            userElement.AppendChild(followElement);
+
+            xmlDocumentRoot.AppendChild(userElement);
+
+            xmlDocument.Save(path);
+
+        }
+        private static User GetUserData(XmlNode node)
+        {
+            XmlNode attribute = node.Attributes.GetNamedItem("id");
+            long id = Convert.ToInt64(attribute.Value);
+            string username = "unexpected";
+            bool admin = false;
+            bool follow = false;
+
+            foreach (XmlNode childnode in node.ChildNodes)
+            {
+                if (childnode.Name == "username")
+                {
+                    username = childnode.InnerText;
+                }
+                if (childnode.Name == "admin")
+                {
+                    admin = Convert.ToBoolean(childnode.InnerText);
+                }
+                if (childnode.Name == "follow")
+                {
+                    follow = Convert.ToBoolean(childnode.InnerText);
+                }
+            }
+
+            User user = new User(id, username, admin:admin, follow:follow);
+            return user;
+        }
+        
+        public User GetUser(long id, string username, bool admin, bool follow)
+        {
+            return new User(id, username, admin:admin, follow:follow);
+        }
+        public User GetUser()
+        {
+            return GetUser(Id, Username, admin:Admin, follow:Follow);
+        }
+        public List<User> GetAllUsers()
         {
             List<User> list = new List<User>();
             
-            foreach(string line in lines)
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(path);
+
+            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
+
+            List<XmlNode> nodes = new List<XmlNode>();
+
+            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("*");
+            if (userNodes != null)
             {
-                User user = ParseData(line);
+                foreach (XmlNode thisNode in userNodes)
+                {
+                    nodes.Add(thisNode);
+                }
+            }
+
+            foreach(XmlNode node in nodes)
+            {
+                User user = GetUserData(node);
                 list.Add(user);
             }
 
             return list;
-        }
-        public User ReturnUser()
-        {
-            return new User(Id, Username, Follow, Admin);
         }
     }
 }

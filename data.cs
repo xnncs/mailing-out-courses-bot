@@ -1,13 +1,4 @@
-using System.Numerics;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Args;
-using Telegram.Bot.Types.Enums;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace project
 {
@@ -15,11 +6,12 @@ namespace project
     {
         public const string path = @"data\data.txt";
 
-        public int hour;
-        public int minute;
+        public int hour = 0;
+        public int minute = 0;
+        public int second = 0;
 
-        public string CourseText;
-        public string CourseUrl;
+        public string CourseText = "smile";
+        public string CourseUrl = @"https://www.youtube.com/watch?v=7ZMsZJcjldU&list=LL&index=46";
 
         public const string CourseButtonText = "based";
 
@@ -36,16 +28,6 @@ namespace project
 
         public Data()
         {
-            string[] temp = System.IO.File.ReadAllLines(path);
-
-            CourseUrl = temp[0].Trim().Remove(0, "courseurl:".Length);
-            CourseText = temp[1].Trim().Remove(0, "coursetext:".Length);
-
-            
-            string[] array = temp[2].Trim().Split(' ');
-
-            hour = Convert.ToInt32(array[0].Remove(0, "hour:".Length));
-            minute = Convert.ToInt32(array[1].Remove(0, "minute:".Length));
 
         }
 

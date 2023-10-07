@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace project
 {
     internal class User
     {
-        public User(long id, string username, bool follow, bool admin)
+        public User(long id, string username, bool admin, bool follow)
         {
             this.id = id;
 
