@@ -1,23 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <users>
-  <user id="5168048643">
-    <username>Lyzix0</username>
-    <admin>False</admin>
-    <follow>False</follow>
+  <user id="1158068623">
+    <username>username1</username>
+    <admin>True</admin>
+    <follow>True</follow>
   </user>
-  <user id="1441135902">
-    <username>lemmrn</username>
-    <admin>False</admin>
-    <follow>False</follow>
-  </user>
-  <user id="1173051011">
-    <username>Ashi228</username>
-    <admin>False</admin>
-    <follow>False</follow>
-  </user>
-  <user id="1367636999">
-    <username>zitiret</username>
-    <admin>False</admin>
+  <user id="1366633299">
+    <username>username2</username>
+    <admin>True</admin>
     <follow>True</follow>
   </user>
 </users>

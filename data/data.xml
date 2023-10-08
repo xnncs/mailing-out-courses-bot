@@ -1,10 +1,24 @@
-<!-- <?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <data>
-    <course link="https://www.youtube.com/watch?v=7ZMsZJcjldU&list=LL&index=46">
-        <coursetext>smile</coursetext>
-    </course>
-    <time>
-        <hour>5</hour>
-        <minute>30</minute>
-    </time>
-</data> -->
+  <course>
+    <courselink>https://www.youtube.com/watch?v=RlDjemjicus</courselink>
+    <coursetext>Гайды о котором упомянул в ролике  - https://boosty.to/cirilla04
+
+Бесплатный гайд на ментальное здоровье и огромное количество видеогайдов на моем бусти - https://boosty.to/cirilla04
+Если хотите закинуть донат - https://boosty.to/cirilla04/single-pa...
+
+Мой тг канал - https://t.me/Martin00004
+
+Мой второй канал -   
+
+ / @user-kp3xu6nc8g  
+
+Превью делал он - https://vk.com/akira_ps</coursetext>
+    <courseimg>https://i.ytimg.com/vi/VA4Q5RGlLwo/sddefault.jpg</courseimg>
+  </course>
+  <time>
+    <hour>1</hour>
+    <minute>1</minute>
+    <second>1</second>
+  </time>
+</data>

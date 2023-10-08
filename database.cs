@@ -12,7 +12,7 @@ namespace project
         private static string Username;
         private static bool Admin;
         private static bool Follow;
-
+        
 
         private static XmlNode GetXmlNode(long Id, XmlElement xmlDocumentRoot)
         {
