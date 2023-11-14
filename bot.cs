@@ -9,10 +9,8 @@ namespace project
     {
         private static async Task sendMessage(ITelegramBotClient botClient, Update update, CancellationToken token, List<User> users, CourseData courseData, InlineKeyboardMarkup CourseLink)
         {
-            Console.WriteLine("1");
             foreach(User user in users)
             {
-                Console.WriteLine(user.id);
                 if(user.follow)
                 {
                     Message courseMessage = await botClient.SendPhotoAsync(
