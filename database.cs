@@ -23,11 +23,11 @@ namespace project
         }
         private Update update;
 
-        private const string host = "localhost";
-        private const string dbusername = "postgres";
-        private const string dataBaseName = "MailingOutTelegramBotDB";
-        private const string password = "1425";
-        private const string port = "5432";
+        private const string host = "";
+        private const string dbusername = "";
+        private const string dataBaseName = "";
+        private const string password = "";
+        private const string port = "";
         private static string connectionString = connectionString = $"Server={host};Username={dbusername};Database={dataBaseName};Port={port};Password={password};SSLMode=Prefer";
 
 

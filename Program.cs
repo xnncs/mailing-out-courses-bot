@@ -6,7 +6,7 @@ namespace project
     {
         static void Main()
         {
-            string apiToken = "6470308128:AAG6ibAHfxsLwLy2o4Y-aw0WM0OS03Qqfbc";
+            string apiToken = "";
 
             var client = new TelegramBotClient(apiToken);
 
