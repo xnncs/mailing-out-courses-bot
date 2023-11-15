@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\code\\codes\\project\\project.csproj": {}
+    "D:\\code\\codes\\telegrambot\\project.csproj": {}
   },
   "projects": {
-    "D:\\code\\codes\\project\\project.csproj": {
+    "D:\\code\\codes\\telegrambot\\project.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\code\\codes\\project\\project.csproj",
+        "projectUniqueName": "D:\\code\\codes\\telegrambot\\project.csproj",
         "projectName": "project",
-        "projectPath": "D:\\code\\codes\\project\\project.csproj",
+        "projectPath": "D:\\code\\codes\\telegrambot\\project.csproj",
         "packagesPath": "C:\\Users\\anyon\\.nuget\\packages\\",
-        "outputPath": "D:\\code\\codes\\project\\obj\\",
+        "outputPath": "D:\\code\\codes\\telegrambot\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,6 +44,10 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Npgsql": {
+              "target": "Package",
+              "version": "[7.0.6, )"
+            },
             "Telegram.Bot": {
               "target": "Package",
               "version": "[19.0.0, )"

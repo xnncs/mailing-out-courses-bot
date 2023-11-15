@@ -1,204 +1,160 @@
 using Telegram.Bot.Types;
-using System.Xml;
+using Npgsql;
+using System.ComponentModel;
+
 
 namespace project
 {
     class DataBase
     {
-        private static Update update;
-        private const string path = @"D:\code\codes\project\data\users.xml";
-
-        private static long Id;
-        private static string Username;
-        private static bool Admin;
-        private static bool Follow;
-        
-
-        private static XmlNode GetXmlNode(long Id, XmlElement xmlDocumentRoot)
+        public DataBase(Update update)
         {
-            XmlNode node = null;
-
-            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("user");
-            if (userNodes != null)
-            {
-                foreach (XmlNode thisNode in userNodes)
-                {
-                    if (Convert.ToInt64(thisNode.SelectSingleNode("@id").Value) == Id)
-                    {
-                        node = thisNode;
-                    }
-                }
-            }
-            return node;
-
-        }
-        private static bool ContainsUser(long Id, XmlElement xmlDocumentRoot)
-        {
-            bool contains = false;
-
-            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("user");
-            if (userNodes != null)
-            {
-                foreach (XmlNode thisNode in userNodes)
-                {
-                    if (Convert.ToInt64(thisNode.SelectSingleNode("@id").Value) == Id)
-                    {
-                        contains = true;
-                    }
-                }
-            }
-            return contains;
-        }
-        public void ChangeFollow(bool temp)
-        {
-            if(Follow == temp)
-            {
-                return;
-            }
-
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(path);
-
-            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
-
-            XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
-            if (node != null)
-            {
-                xmlDocumentRoot.RemoveChild(node);
-            }
-            xmlDocument.Save(path);
-
-            WriteUserData(xmlDocument, xmlDocumentRoot, temp);
-
-        }
-
-        public DataBase(Update getUpdate)
-        {
-            update = getUpdate;
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(path);
-
-            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
-
+            this.update = update;
             Id = update.Message.Chat.Id;
 
-            User user;
-            if(ContainsUser(Id, xmlDocumentRoot))
+            bool containsUser = ContainsUser();
+
+            if (!containsUser)
             {
-                XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
-                user = GetUserData(node);
+                AddData();
             }
-            else
-            {
-                WriteUserData(xmlDocument, xmlDocumentRoot, follow: false);
-                XmlNode node = GetXmlNode(Id, xmlDocumentRoot);
-                user = GetUserData(node);                
-            }
-
-            Id = user.id;
-            Username = user.username;
-            Admin = user.admin;
-            Follow = user.follow;
-        }
-
-        private static void WriteUserData(XmlDocument xmlDocument, XmlElement xmlDocumentRoot, bool follow)
-        {
-            long id = update.Message.Chat.Id;
-            string username = update.Message.Chat.Username;
-            bool admin = false;
-
-            XmlElement userElement = xmlDocument.CreateElement("user");
-
-            XmlAttribute idAttribute = xmlDocument.CreateAttribute("id");
-
-            XmlElement nameElement = xmlDocument.CreateElement("username");
-            XmlElement adminElement = xmlDocument.CreateElement("admin");
-            XmlElement followElement = xmlDocument.CreateElement("follow");
-
-            XmlText idText = xmlDocument.CreateTextNode(id.ToString());
-            XmlText nameText = xmlDocument.CreateTextNode(username);
-            XmlText adminText = xmlDocument.CreateTextNode(admin.ToString());
-            XmlText followText = xmlDocument.CreateTextNode(follow.ToString());
-
-            idAttribute.AppendChild(idText);
-            nameElement.AppendChild(nameText);
-            adminElement.AppendChild(adminText);
-            followElement.AppendChild(followText);
-
-            userElement.Attributes.Append(idAttribute);
-
-            userElement.AppendChild(nameElement);
-            userElement.AppendChild(adminElement);
-            userElement.AppendChild(followElement);
-
-            xmlDocumentRoot.AppendChild(userElement);
-
-            xmlDocument.Save(path);
+            GetData();
 
         }
-        private static User GetUserData(XmlNode node)
-        {
-            XmlNode attribute = node.Attributes.GetNamedItem("id");
-            long id = Convert.ToInt64(attribute.Value);
-            string username = "unexpected";
-            bool admin = false;
-            bool follow = false;
+        private Update update;
 
-            foreach (XmlNode childnode in node.ChildNodes)
+        private const string host = "localhost";
+        private const string dbusername = "postgres";
+        private const string dataBaseName = "MailingOutTelegramBotDB";
+        private const string password = "1425";
+        private const string port = "5432";
+        private static string connectionString = connectionString = $"Server={host};Username={dbusername};Database={dataBaseName};Port={port};Password={password};SSLMode=Prefer";
+
+
+        public long Id {get; private set;}
+        public string Username {get; private set;}
+        public bool Admin {get; private set;}
+        public bool Follow {get; private set;}
+
+        private void AddData()
+        {
+            Console.WriteLine("Adding data");
+            using (var connection = new NpgsqlConnection(connectionString))
             {
-                if (childnode.Name == "username")
+                Console.WriteLine("Opening connection");
+                connection.Open();
+
+                using (var command = new NpgsqlCommand("INSERT INTO users VALUES (@id, @username, @follow, @admin)", connection))
                 {
-                    username = childnode.InnerText;
-                }
-                if (childnode.Name == "admin")
-                {
-                    admin = Convert.ToBoolean(childnode.InnerText);
-                }
-                if (childnode.Name == "follow")
-                {
-                    follow = Convert.ToBoolean(childnode.InnerText);
+                    command.Parameters.AddWithValue("id", update.Message.Chat.Id);
+                    command.Parameters.AddWithValue("username", update.Message.Chat.Username);
+                    command.Parameters.AddWithValue("follow", false);
+                    command.Parameters.AddWithValue("admin", false);
+
+                    Console.WriteLine($"Number of rows inserted = {command.ExecuteNonQuery()}");
                 }
             }
+        }
 
-            User user = new User(id, username, admin:admin, follow:follow);
-            return user;
-        }
-        
-        public User GetUser(long id, string username, bool admin, bool follow)
-        {
-            return new User(id, username, admin:admin, follow:follow);
-        }
-        public User GetUser()
-        {
-            return GetUser(Id, Username, admin:Admin, follow:Follow);
-        }
         public List<User> GetAllUsers()
         {
-            List<User> list = new List<User>();
-            
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(path);
+            List<User> allUsers = new List<User>();
 
-            XmlElement xmlDocumentRoot = xmlDocument.DocumentElement;
-
-            List<XmlNode> nodes = new List<XmlNode>();
-
-            XmlNodeList userNodes = xmlDocumentRoot.SelectNodes("*");
-            if (userNodes != null)
+            using (var connection = new NpgsqlConnection(connectionString))
             {
-                foreach (XmlNode thisNode in userNodes)
+                Console.WriteLine("Opening connection");
+                connection.Open();
+
+                using (var command = new NpgsqlCommand("SELECT * FROM users", connection))
                 {
-                    nodes.Add(thisNode);
+                    NpgsqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        long id = reader.GetInt64(0);
+                        string username = reader.GetString(1);
+                        bool follow =  reader.GetBoolean(2);
+                        bool admin = reader.GetBoolean(3);
+
+                        allUsers.Add(new User() {
+                            Id = id,
+                            Username = username,
+                            IsFollow = follow,
+                            IsAdmin = admin
+                        });
+                    }
                 }
             }
 
-            foreach(XmlNode node in nodes)
-            {
-                User user = GetUserData(node);
-                list.Add(user);
-            }
-
-            return list;
+            return allUsers;
         }
+
+        private void GetData()
+        {
+            Console.WriteLine("Geting data");
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                Console.WriteLine("Opening connection");
+                connection.Open();
+
+                using (var command = new NpgsqlCommand("SELECT * FROM users WHERE user_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("id", Id);
+                    NpgsqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        Id = reader.GetInt64(0);
+                        Username = reader.GetString(1);
+                        Follow =  reader.GetBoolean(2);
+                        Admin = reader.GetBoolean(3);
+                    }
+                }
+            }
+        }
+        public void ChangeFollow(bool state)
+        {
+            Console.WriteLine($"Updating follow data to {state}");
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                Console.WriteLine("Opening connection");
+                connection.Open();
+
+                using (var command = new NpgsqlCommand("UPDATE users SET isFollow = @state WHERE user_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("id", Id);
+                    command.Parameters.AddWithValue("state", state);
+
+                    Console.WriteLine($"Number of rows updated = {command.ExecuteNonQuery()}");
+                }
+            }
+        }
+        private bool ContainsUser()
+        {
+            bool contains = false;
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                Console.WriteLine("Opening connection");
+                connection.Open();
+
+                using (var command = new NpgsqlCommand("SELECT COUNT(*) FROM users WHERE user_id = @id", connection))
+                {
+                    command.Parameters.AddWithValue("id", Id);
+                    NpgsqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int count = reader.GetInt32(0);
+                        Console.WriteLine($"[test] count of users is {count}");
+                        contains = count == 0 ? false : true;
+                    }
+                }
+            }
+            Console.WriteLine($"[test] contains = {contains}");
+            return contains;
+        }
+        
+        
+
     }
 }
