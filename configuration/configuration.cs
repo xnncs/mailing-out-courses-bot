@@ -13,14 +13,14 @@ namespace project
 
     class TelegramConfiguration
     {
-        public string? BotToken;
+        public string? BotToken { get; set; }
     }
     class DataBaseConfiguration
     {
-        public string? host { get; init;}
-        public string? dbusername { get; init;}
-        public string? dataBaseName { get; init;}
-        public string? password { get; init;}
-        public string? port { get; init;}
+        public string? host { get; set;}
+        public string? dbusername { get; set;}
+        public string? dataBaseName { get; set;}
+        public string? password { get; set;}
+        public string? port { get; set;}
     }
 }
