@@ -1,4 +1,7 @@
-﻿using Telegram.Bot;
+﻿using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Telegram.Bot;
 
 namespace project
 {
@@ -6,7 +9,9 @@ namespace project
     {
         static void Main()
         {
-            string apiToken = "";
+            Configuration configuration = JsonSerializer.Deserialize<Configuration>(@"configuration\configuration.json");
+
+            string apiToken = configuration.telegramConfiguration.BotToken;
 
             var client = new TelegramBotClient(apiToken);
 

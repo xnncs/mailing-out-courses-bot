@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "SBic1g3APpgJ1fiqcYU+sFnVMnv0t0yeWYaAxWw2fy+RoKkcFTRUxg80V6P1g6JL/3A0iyhgC/PizEy01wwHWA==",
+  "dgSpecHash": "TQBhq1SPc0fF4ULayJ2acVPPm89vURB2b91P52atlxh7/FuDeQzMvmvYLUYCC+ndr6V6W0BH78he+YrCz2hcsw==",
   "success": true,
-  "projectFilePath": "D:\\code\\codes\\telegrambot\\project.csproj",
+  "projectFilePath": "D:\\code\\programs\\malingtelegrambot\\project.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\anyon\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
     "C:\\Users\\anyon\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",

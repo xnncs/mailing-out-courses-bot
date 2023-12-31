@@ -1,6 +1,7 @@
 using Telegram.Bot.Types;
 using Npgsql;
 using System.ComponentModel;
+using System.Text.Json;
 
 
 namespace project
@@ -23,12 +24,24 @@ namespace project
         }
         private Update update;
 
-        private const string host = "";
-        private const string dbusername = "";
-        private const string dataBaseName = "";
-        private const string password = "";
-        private const string port = "";
-        private static string connectionString = connectionString = $"Server={host};Username={dbusername};Database={dataBaseName};Port={port};Password={password};SSLMode=Prefer";
+
+        private static string GetConnectionString()
+        {
+            const string jsonFilePath = @"configuration\configuration.json";
+
+            static DataBaseConfiguration parseDataBaseConfiguration(string jsonFilePath)
+            {
+                Configuration configuration = JsonSerializer.Deserialize<Configuration>(jsonFilePath);
+
+                return configuration.dataBaseConfiguration;
+            }
+            DataBaseConfiguration configuration = parseDataBaseConfiguration(jsonFilePath);
+
+
+            return $"Server={configuration.host};Username={configuration.dbusername};Database={configuration.dataBaseName};Port={configuration.port};Password={configuration.password};SSLMode=Prefer";
+        }
+
+        private static string connectionString =  GetConnectionString(); 
 
 
         public long Id {get; private set;}

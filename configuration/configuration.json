@@ -1,0 +1,13 @@
+{
+    "telegramConfiguration": {
+        "BotToken": "0000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    
+    "databaseConfiguration": {
+        "host": "",
+        "databaseUsername": "",
+        "datavaseName": "",
+        "password": "",
+        "port": ""
+    }
+}
